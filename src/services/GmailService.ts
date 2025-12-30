@@ -7,4 +7,9 @@ export class GmailService {
   constructor(googleTokens: GoogleTokens) {
     this.GoogleTokens = googleTokens;
   }
+
+  public async listMails() {
+    const token = await this.GoogleTokens.loadTokens();
+    const client = this.GoogleTokens.getOauthClient();
+  }
 }

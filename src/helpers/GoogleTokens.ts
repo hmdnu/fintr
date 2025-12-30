@@ -1,6 +1,5 @@
 import { google } from "googleapis";
 import type { Credentials } from "google-auth-library";
-import { Either } from "../utils/Either";
 import { PromiseHandler } from "../utils/PromiseHandler";
 
 type GoogleClientConfig = {
@@ -13,7 +12,7 @@ export class GoogleTokens {
   private CLIENT_ID = "";
   private CLIENT_SECRET = "";
   private REDIRECT_URI = "";
-  private TOKEN_PATH = "../credentials/token.json";
+  private TOKEN_PATH = "src/credentials/token.json";
 
   constructor(googleClientConfig: GoogleClientConfig) {
     this.CLIENT_ID = googleClientConfig.clientId;
@@ -21,19 +20,19 @@ export class GoogleTokens {
     this.REDIRECT_URI = googleClientConfig.redirectUri;
   }
 
-  public loadTokens() {
-    return Bun.file(this.TOKEN_PATH).text();
+  public async loadTokens() {
+    return await PromiseHandler.tryPromise(Bun.file(this.TOKEN_PATH).text(), {
+      try: (token) => token,
+      catch: (err) => {
+        return err;
+      },
+    });
   }
 
   public async saveTokens(tokens: Credentials) {
-    const writtenFile = await PromiseHandler.wrap(
+    return await PromiseHandler.tryPromise(
       Bun.write(this.TOKEN_PATH, JSON.stringify(tokens)),
-    );
-
-    return Either.match(
-      writtenFile,
-      async (err) => err,
-      () => null,
+      { try: () => null, catch: (err) => err },
     );
   }
 

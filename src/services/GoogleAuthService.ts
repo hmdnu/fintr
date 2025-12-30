@@ -1,7 +1,6 @@
 import { Common } from "googleapis";
 import { GoogleTokens } from "../helpers/GoogleTokens";
 import { PromiseHandler } from "../utils/PromiseHandler";
-import { Either } from "../utils/Either";
 import { Credentials } from "google-auth-library";
 
 export class GoogleAuthService {
@@ -23,34 +22,29 @@ export class GoogleAuthService {
   }
 
   public async oauthCallback(code: string) {
-    const clientToken = await PromiseHandler.wrap(this.client.getToken(code));
-    return await Either.match(
-      clientToken,
-      (err) => {
-        console.error("Failed", err);
-        return {
-          message: "Unauthorized",
-        };
-      },
-      async (clientToken) => {
-        const { tokens } = clientToken;
+    return await PromiseHandler.tryPromise(this.client.getToken(code), {
+      try: async ({ tokens }) => {
         this.client.setCredentials(tokens);
-        return await this.saveAuthToken(tokens);
+        return this.saveAuthToken(tokens);
       },
-    );
+      catch: () => {
+        return { message: "Unauthorized", status: 401 };
+      },
+    });
   }
 
   private async saveAuthToken(token: Credentials) {
-    const savedToken = await PromiseHandler.wrap(
+    return await PromiseHandler.tryPromise(
       this.GoogleTokens.saveTokens(token),
-    );
-    return await Either.match(
-      savedToken,
-      async (err) => {
-        console.error("Failed", err);
-        return { message: "Something went wrong" };
+      {
+        try: () => {
+          return { message: "Authorized", status: 200 };
+        },
+        catch: (err) => {
+          console.error("Failed", err);
+          return { message: "Unauthorized", status: 401 };
+        },
       },
-      async () => ({ message: "Authorized" }),
     );
   }
 }
