@@ -7,7 +7,6 @@
   },
   "dependencies": {
     "@google-cloud/local-auth": "^3.0.1",
-    "elysia": "latest",
     "googleapis": "^169.0.0",
     "hono": "^4.11.3"
   },
