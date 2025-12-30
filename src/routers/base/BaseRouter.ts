@@ -1,10 +1,6 @@
 import { Hono } from "hono";
 
-interface RouterContract {
-  getApp(): Hono;
-}
-
-export abstract class BaseRouter implements RouterContract {
+export abstract class BaseRouter {
   protected app: Hono;
 
   constructor(app: Hono) {
