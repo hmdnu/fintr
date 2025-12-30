@@ -1,17 +1,27 @@
 import { Hono } from "hono";
 import { BaseRouter } from "../base/BaseRouter";
 import { GmailService } from "../../services/GmailService";
+import { AuthMiddleware } from "../../middlewares/AuthMiddleware";
+
+type GmailRoutesType = {
+  gmailService: GmailService;
+  authMiddleware: AuthMiddleware;
+};
 
 export class GmailRoutes extends BaseRouter {
-  private GmailService: GmailService;
+  private gmailService: GmailService;
+  private authMiddleware: AuthMiddleware;
 
-  constructor(GmailService: GmailService) {
+  constructor({ gmailService, authMiddleware }: GmailRoutesType) {
     super(new Hono());
-    this.GmailService = GmailService;
+    this.gmailService = gmailService;
+    this.authMiddleware = authMiddleware;
     this.routes();
   }
 
   protected routes(): void {
-    this.app.get("/", (c) => c.text("/gmail"));
+    this.app.get("/list", this.authMiddleware.authorize(), (c) => {
+      return c.text("/gmail");
+    });
   }
 }
