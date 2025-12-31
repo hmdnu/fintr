@@ -11,9 +11,9 @@ export class AuthMiddleware {
   public authorize() {
     return createMiddleware(async (c, next) => {
       const token = await this.googleTokens.loadTokens();
-      if (token instanceof Error) {
+      if (!token.ok) {
         c.status(401);
-        return c.json({ message: "Unauthorized", reason: token.message });
+        return c.json({ message: "Unauthorized", reason: token.err.message });
       }
 
       await next();

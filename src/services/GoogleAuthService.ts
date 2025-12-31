@@ -22,29 +22,15 @@ export class GoogleAuthService {
   }
 
   public async oauthCallback(code: string) {
-    return await PromiseHandler.tryPromise(this.client.getToken(code), {
-      try: async ({ tokens }) => {
-        this.client.setCredentials(tokens);
-        return this.saveAuthToken(tokens);
-      },
-      catch: () => {
-        return { message: "Unauthorized", status: 401 };
-      },
-    });
-  }
+    const token = await PromiseHandler.wrap(this.client.getToken(code));
+    if (!token.ok) return { message: "Unauthorized", status: 401 };
 
-  private async saveAuthToken(token: Credentials) {
-    return await PromiseHandler.tryPromise(
-      this.GoogleTokens.saveTokens(token),
-      {
-        try: () => {
-          return { message: "Authorized", status: 200 };
-        },
-        catch: (err) => {
-          console.error("Failed", err);
-          return { message: "Unauthorized", status: 401 };
-        },
-      },
+    this.client.setCredentials(token.value.tokens);
+    const savedToken = await PromiseHandler.wrap(
+      this.GoogleTokens.saveTokens(token.value.tokens),
     );
+
+    if (!savedToken.ok) return { message: "Unauthorized", status: 401 };
+    return { message: "Authorized", status: 200 };
   }
 }

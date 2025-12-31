@@ -1,6 +1,6 @@
 import { google } from "googleapis";
 import type { Credentials } from "google-auth-library";
-import { PromiseHandler } from "../utils/PromiseHandler";
+import { PromiseHandler, Result } from "../utils/PromiseHandler";
 
 type GoogleClientConfig = {
   clientId: string;
@@ -21,19 +21,17 @@ export class GoogleTokens {
   }
 
   public async loadTokens() {
-    return await PromiseHandler.tryPromise(Bun.file(this.TOKEN_PATH).text(), {
-      try: (token) => token,
-      catch: (err) => {
-        return err;
-      },
-    });
+    return await PromiseHandler.wrap(
+      Bun.file(this.TOKEN_PATH).json() as Promise<Credentials>,
+    );
   }
 
   public async saveTokens(tokens: Credentials) {
-    return await PromiseHandler.tryPromise(
+    const savedToken = await PromiseHandler.wrap(
       Bun.write(this.TOKEN_PATH, JSON.stringify(tokens)),
-      { try: () => null, catch: (err) => err },
     );
+    if (!savedToken.ok) return savedToken.err;
+    return savedToken.value;
   }
 
   public getOauthClient() {

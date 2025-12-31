@@ -1,33 +1,16 @@
-type PromiseHandlerValue<T> = { ok: T; err: null } | { ok: null; err: Error };
-type TryPromiseParams<T, R> = {
-  try: (promise: T) => R | Promise<R>;
-  catch: (err: Error) => Error | R;
-};
+export type Result<T, E extends Error = Error> =
+  | { ok: true; value: T }
+  | { ok: false; err: E };
 
 export class PromiseHandler {
-  private static async wrap<T>(
-    promise: Promise<T>,
-  ): Promise<PromiseHandlerValue<T>> {
+  public static async wrap<T>(promise: Promise<T>): Promise<Result<T>> {
     try {
-      const ok = await promise;
-      return { ok, err: null };
-    } catch (err) {
-      if (err instanceof Error) return { ok: null, err };
-      return { ok: null, err: new Error("Unknown error") };
+      return { ok: true, value: await promise };
+    } catch (e: unknown) {
+      return {
+        ok: false,
+        err: e instanceof Error ? e : new Error(`Unknown error: ${e}`),
+      };
     }
-  }
-
-  public static async tryPromise<T, R>(
-    promise: Promise<T>,
-    tryPromise: TryPromiseParams<T, R>,
-  ): Promise<R | Error> {
-    const { ok, err } = await this.wrap(promise);
-    if (err !== null) {
-      return tryPromise.catch(err);
-    }
-    if (ok !== null) {
-      return tryPromise.try(ok);
-    }
-    return tryPromise.catch(new Error("Unexpected error"));
   }
 }
