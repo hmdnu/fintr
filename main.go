@@ -7,10 +7,12 @@ import (
 	"github.com/hmdnu/fintr/internal/user"
 	"github.com/hmdnu/fintr/pkg/database"
 	_ "github.com/hmdnu/fintr/pkg/database"
+	"github.com/hmdnu/fintr/pkg/env"
 	"github.com/hmdnu/fintr/server"
 )
 
 func main() {
+	env.Load()
 	conn, err := database.Connect()
 	// database.InitTableIfNotExist(conn)
 
