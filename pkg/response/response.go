@@ -71,3 +71,12 @@ func BadReqError(w http.ResponseWriter, validatorErr map[string]string) {
 	}
 	writeResponse(w, json)
 }
+
+func UnauthorizedErr(w http.ResponseWriter, msg string) {
+	json := map[string]any{
+		"message": msg,
+		"success": false,
+		"status":  http.StatusUnauthorized,
+	}
+	writeResponse(w, json)
+}

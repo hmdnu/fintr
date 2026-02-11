@@ -1,11 +1,8 @@
 package auth
 
 import (
-	"strconv"
-	"time"
-
-	"github.com/golang-jwt/jwt/v5"
 	errortype "github.com/hmdnu/fintr/pkg/errorType"
+	"github.com/hmdnu/fintr/pkg/token"
 	"github.com/jmoiron/sqlx"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -29,19 +26,9 @@ func (s *Service) Login(authDto AuthDto) (string, error) {
 	if err != nil {
 		return "", errortype.CredInvalidErr
 	}
-	token, err := generateToken(user, "secret")
+	token, err := token.GenerateToken(user.Id)
 	if err != nil {
 		return "", err
 	}
 	return token, nil
-}
-
-func generateToken(user Auth, secret string) (string, error) {
-	claims := jwt.RegisteredClaims{
-		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
-		IssuedAt:  jwt.NewNumericDate(time.Now()),
-		Subject:   strconv.Itoa(user.Id),
-	}
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte(secret))
 }

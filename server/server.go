@@ -7,6 +7,7 @@ import (
 
 	"github.com/hmdnu/fintr/internal/auth"
 	"github.com/hmdnu/fintr/internal/user"
+	"github.com/hmdnu/fintr/middleware"
 )
 
 type Server struct {
@@ -18,8 +19,12 @@ func New(h *Server) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("POST /login", h.Auth.Login)
-	mux.HandleFunc("GET /user", h.User.List)
-	mux.HandleFunc("POST /user", h.User.Create)
+	mux.HandleFunc("GET /logout", middleware.Auth(h.Auth.Logout))
+
+	mux.HandleFunc("GET /user", middleware.Auth(h.User.List))
+	mux.HandleFunc("POST /user", middleware.Auth(h.User.Create))
+
+	mux.HandleFunc("POST /transaction", middleware.Auth(func(w http.ResponseWriter, r *http.Request) {}))
 	return mux
 }
 

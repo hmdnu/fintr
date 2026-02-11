@@ -52,3 +52,15 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 	})
 	response.Ok(w, &response.HttpResponse{Message: "login success", Status: http.StatusOK})
 }
+
+func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
+	http.SetCookie(w, &http.Cookie{
+		Name:     "accessToken",
+		Path:     "/",
+		MaxAge:   -1,
+		Secure:   true,
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
+	})
+	response.Ok(w, &response.HttpResponse{Message: "logout success", Status: http.StatusOK})
+}
