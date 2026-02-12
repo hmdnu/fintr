@@ -1,17 +1,19 @@
 package middleware
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
-	"time"
+
+	"github.com/hmdnu/fintr/pkg/logger"
 )
 
 func Logger(handler AppHandler) AppHandler {
 	return func(w http.ResponseWriter, r *http.Request) error {
-		start := time.Now()
 		err := handler(w, r)
 		if err != nil {
-			log.Printf("%s %s err=%v took=%s", r.Method, r.URL.Path, err, time.Since(start))
+			slog.Error(err.Error())
+			logger.AppLogger.ErrorLogger(err.Error())
+			return err
 		}
 		return err
 	}

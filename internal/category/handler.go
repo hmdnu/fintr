@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"slices"
 
 	"github.com/go-playground/validator/v10"
 	errortype "github.com/hmdnu/fintr/pkg/errorType"
@@ -29,6 +30,13 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) error {
 		response.BadReqError(w, formatter.MapValidationErr(err))
 		return err
 	}
+	requiredTypes := []string{"income", "expense"}
+	if !slices.Contains(requiredTypes, categoryDto.Type) {
+		response.BadReqError(w, map[string]string{
+			"type": "must be either expense or income",
+		})
+		return errors.New("type must be either expense or income")
+	}
 	err = h.service.Create(&categoryDto)
 	if err != nil {
 		if errors.Is(err, errortype.ConstraintErrType) {
@@ -41,5 +49,11 @@ func (h *Handler) Create(w http.ResponseWriter, r *http.Request) error {
 }
 
 func (h *Handler) List(w http.ResponseWriter, r *http.Request) error {
+	categories, err := h.service.List()
+	if err != nil {
+		response.IntServError(w)
+		return err
+	}
+	response.Ok(w, &response.HttpOk{Data: categories, Message: "categories retrieved", Status: http.StatusOK})
 	return nil
 }

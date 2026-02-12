@@ -10,6 +10,7 @@ import (
 	"github.com/hmdnu/fintr/pkg/database"
 	_ "github.com/hmdnu/fintr/pkg/database"
 	"github.com/hmdnu/fintr/pkg/env"
+	_ "github.com/hmdnu/fintr/pkg/logger"
 	"github.com/hmdnu/fintr/server"
 )
 
