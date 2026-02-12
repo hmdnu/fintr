@@ -7,19 +7,18 @@ import (
 	"github.com/hmdnu/fintr/pkg/token"
 )
 
-func Auth(handler http.HandlerFunc) http.HandlerFunc {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+func Auth(handler AppHandler) AppHandler {
+	return func(w http.ResponseWriter, r *http.Request) error {
 		cookie, err := r.Cookie("accessToken")
 		if err != nil {
 			response.UnauthorizedErr(w, "token not found")
-			return
+			return err
 		}
 		_, isTokenVerified := token.VerifiyToken(cookie.Value)
 		if !isTokenVerified {
 			response.UnauthorizedErr(w, "token not valid or expired")
-			return
+			return err
 		}
-		handler.ServeHTTP(w, r)
-	})
-
+		return handler(w, r)
+	}
 }
