@@ -5,14 +5,19 @@ import (
 	"net/http"
 )
 
-type HttpResponse struct {
+type HttpOk struct {
 	Data    any
 	Message string
 	Status  int
-	Error   any
 }
 
-func Ok(w http.ResponseWriter, res *HttpResponse) {
+type HttpFail struct {
+	Error   error
+	Message string
+	Status  int
+}
+
+func Ok(w http.ResponseWriter, res *HttpOk) {
 	json := map[string]any{
 		"message": res.Message,
 		"success": true,
@@ -22,7 +27,7 @@ func Ok(w http.ResponseWriter, res *HttpResponse) {
 	writeResponse(w, json)
 }
 
-func Fail(w http.ResponseWriter, res *HttpResponse) {
+func Fail(w http.ResponseWriter, res *HttpFail) {
 	if res.Error != nil {
 		jsonWithError := map[string]any{
 			"message": res.Message,
@@ -77,6 +82,15 @@ func UnauthorizedErr(w http.ResponseWriter, msg string) {
 		"message": msg,
 		"success": false,
 		"status":  http.StatusUnauthorized,
+	}
+	writeResponse(w, json)
+}
+
+func DuplicateErr(w http.ResponseWriter, msg string) {
+	json := map[string]any{
+		"message": msg,
+		"success": false,
+		"status":  http.StatusConflict,
 	}
 	writeResponse(w, json)
 }
