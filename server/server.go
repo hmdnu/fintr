@@ -6,26 +6,33 @@ import (
 	"net/http"
 
 	"github.com/hmdnu/fintr/internal/auth"
+	"github.com/hmdnu/fintr/internal/category"
+	"github.com/hmdnu/fintr/internal/transaction"
 	"github.com/hmdnu/fintr/internal/user"
 	"github.com/hmdnu/fintr/middleware"
+	"github.com/hmdnu/fintr/pkg/handler"
 )
 
 type Server struct {
-	User *user.Handler
-	Auth *auth.Handler
+	User        *user.Handler
+	Auth        *auth.Handler
+	Transaction *transaction.Handler
+	Category    *category.Handler
 }
 
 func New(h *Server) *http.ServeMux {
-	mux := http.NewServeMux()
+	route := handler.NewRoute(middleware.Logger)
 
-	mux.HandleFunc("POST /login", h.Auth.Login)
-	mux.HandleFunc("GET /logout", middleware.Auth(h.Auth.Logout))
+	route.Handle("POST /login", h.Auth.Login)
+	route.Handle("GET /logout", h.Auth.Logout, middleware.Auth)
+	route.Handle("GET /user", h.User.List, middleware.Auth)
+	route.Handle("POST /user", h.User.Create, middleware.Auth)
+	route.Handle("GET /transaction", h.Transaction.List, middleware.Auth)
+	route.Handle("POST /transaction", h.Transaction.Create, middleware.Auth)
+	route.Handle("POST /category", h.Category.Create, middleware.Auth)
+	route.Handle("GET /category", h.Category.List, middleware.Auth)
 
-	mux.HandleFunc("GET /user", middleware.Auth(h.User.List))
-	mux.HandleFunc("POST /user", middleware.Auth(h.User.Create))
-
-	mux.HandleFunc("POST /transaction", middleware.Auth(func(w http.ResponseWriter, r *http.Request) {}))
-	return mux
+	return route.GetMux()
 }
 
 func Listen(port string, mux *http.ServeMux) {
