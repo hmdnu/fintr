@@ -3,7 +3,6 @@ package auth
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 
 	"github.com/go-playground/validator/v10"
@@ -22,24 +21,21 @@ func NewHandler(service *Service) *Handler {
 
 var validate = validator.New()
 
-func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Login(w http.ResponseWriter, r *http.Request) error {
 	var authDto AuthDto
 	json.NewDecoder(r.Body).Decode(&authDto)
 	err := validate.Struct(authDto)
 	if err != nil {
-		fmt.Println(err)
 		response.BadReqError(w, formatter.MapValidationErr(err))
-		return
+		return err
 	}
 	token, err := h.service.Login(authDto)
 	if err != nil {
-		fmt.Println(err)
 		if errors.Is(err, errortype.CredInvalidErr) {
-			response.Fail(w, &response.HttpResponse{Message: err.Error(), Status: http.StatusUnauthorized})
-			return
+			response.Fail(w, &response.HttpFail{Message: err.Error(), Status: http.StatusUnauthorized})
+			return err
 		}
-		response.IntServError(w)
-		return
+		return err
 	}
 	http.SetCookie(w, &http.Cookie{
 		Name:     "accessToken",
@@ -50,10 +46,11 @@ func (h *Handler) Login(w http.ResponseWriter, r *http.Request) {
 		SameSite: http.SameSiteStrictMode,
 		MaxAge:   3600,
 	})
-	response.Ok(w, &response.HttpResponse{Message: "login success", Status: http.StatusOK})
+	response.Ok(w, &response.HttpOk{Message: "login success", Status: http.StatusOK})
+	return nil
 }
 
-func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) error {
 	http.SetCookie(w, &http.Cookie{
 		Name:     "accessToken",
 		Path:     "/",
@@ -62,5 +59,6 @@ func (h *Handler) Logout(w http.ResponseWriter, r *http.Request) {
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,
 	})
-	response.Ok(w, &response.HttpResponse{Message: "logout success", Status: http.StatusOK})
+	response.Ok(w, &response.HttpOk{Message: "logout success", Status: http.StatusOK})
+	return nil
 }
