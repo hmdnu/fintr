@@ -26,6 +26,7 @@ func New(h *Server) *http.ServeMux {
 	route.Handle("POST /login", h.Auth.Login)
 	route.Handle("GET /logout", h.Auth.Logout, middleware.Auth)
 	route.Handle("GET /user", h.User.List, middleware.Auth)
+	route.Handle("GET /user/{id}", h.User.Get, middleware.Auth)
 	route.Handle("POST /user", h.User.Create, middleware.Auth)
 	route.Handle("GET /transaction", h.Transaction.List, middleware.Auth)
 	route.Handle("POST /transaction", h.Transaction.Create, middleware.Auth)

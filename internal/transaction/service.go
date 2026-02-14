@@ -11,7 +11,7 @@ type Service struct {
 	db *sqlx.DB
 }
 
-func NewServie(db *sqlx.DB) *Service {
+func NewService(db *sqlx.DB) *Service {
 	return &Service{db: db}
 }
 
@@ -41,3 +41,7 @@ JOIN categories as c ON t.category_id = c.id;
 	}
 	return transactions, nil
 }
+
+// func (s *Service) Get(id int) (Transaction, error) {
+
+// }

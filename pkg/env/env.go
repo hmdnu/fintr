@@ -9,6 +9,7 @@ import (
 
 var (
 	JWT_SECRET = ""
+	PORT       = ""
 )
 
 func Load() error {
@@ -18,6 +19,7 @@ func Load() error {
 		return err
 	}
 	JWT_SECRET = os.Getenv("JWT_SECRET")
+	PORT = os.Getenv("PORT")
 	fmt.Println("ENV LOADED")
 	return nil
 }

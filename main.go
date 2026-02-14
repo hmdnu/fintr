@@ -17,7 +17,7 @@ import (
 func main() {
 	env.Load()
 	conn, err := database.Connect()
-	// database.InitTableIfNotExist(conn)
+	database.InitTableIfNotExist(conn)
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -26,11 +26,11 @@ func main() {
 	authHandler := auth.NewHandler(authService)
 	userService := user.NewService(conn)
 	userHandler := user.NewHandler(userService)
-	transactionServie := transaction.NewServie(conn)
-	transactionHandler := transaction.NewHandler(transactionServie)
+	transactionService := transaction.NewService(conn)
+	transactionHandler := transaction.NewHandler(transactionService)
 	categoryService := category.NewService(conn)
 	categoryHandler := category.NewHandler(categoryService)
 
 	mux := server.New(&server.Server{User: userHandler, Auth: authHandler, Transaction: transactionHandler, Category: categoryHandler})
-	server.Listen("8080", mux)
+	server.Listen(env.PORT, mux)
 }
