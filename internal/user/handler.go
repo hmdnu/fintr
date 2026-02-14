@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/go-playground/validator/v10"
 	errortype "github.com/hmdnu/fintr/pkg/errorType"
@@ -51,5 +52,20 @@ func (h *Handler) List(w http.ResponseWriter, r *http.Request) error {
 		return err
 	}
 	response.Ok(w, &response.HttpOk{Message: "success retrieved users", Status: http.StatusOK, Data: users})
+	return nil
+}
+
+func (h *Handler) Get(w http.ResponseWriter, r *http.Request) error {
+	idInt, err := strconv.Atoi(r.PathValue("id"))
+	if err != nil {
+		response.BadReqError(w, map[string]string{"id": "must be int"})
+		return err
+	}
+	user, err := h.service.Get(idInt)
+	if err != nil {
+		response.IntServError(w)
+		return err
+	}
+	response.Ok(w, &response.HttpOk{Data: user, Message: "user retrieved", Status: http.StatusOK})
 	return nil
 }

@@ -43,3 +43,13 @@ func (s *Service) List() ([]User, error) {
 	}
 	return users, nil
 }
+
+func (s *Service) Get(id int) (*User, error) {
+	query := "SELECT id, name, username, balance FROM accoutns WHERE id = :id AND is_active = true"
+	user := User{}
+	err := s.db.Get(&user, query, id)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}

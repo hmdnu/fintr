@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS accounts (
 CREATE TABLE IF NOT EXISTS categories (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	name TEXT NOT NULL UNIQUE,
-	type TEXT NOT NULL
+	type TEXT NOT NULL,
+	is_deleted BOOLEAN DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS transactions (
@@ -32,6 +33,7 @@ CREATE TABLE IF NOT EXISTS transactions (
 	amount REAL NOT NULL,
 	note TEXT,
 	date TEXT NOT NULL,
+	is_deleted BOOLEAN DEFAULT 0,
 	FOREIGN KEY(account_id) REFERENCES accounts(id),
 	FOREIGN KEY(category_id) REFERENCES categories(id)
 );
